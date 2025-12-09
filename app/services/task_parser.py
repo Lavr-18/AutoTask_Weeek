@@ -14,8 +14,10 @@ async def parse_task_text(text: str) -> dict:
     prompt = f"""
     Проанализируй следующий текст задачи и извлеки из него следующую информацию, учитывая, что сегодня {current_date}:
     1. title: Краткое и емкое название задачи.
-    2. deadline: Дата и время дедлайна, если указано. Приведи к формату YYYY-MM-DD HH:MM:SS.
+    2. deadline: Дата дедлайна, если указана. Приведи к формату DD.MM.YYYY.
     3. assignee: Имя или username ответственного, если указан.
+    4. project_name: Название проекта, если указано (например, "в проекте 'Название Проекта'").
+    5. board_name: Название доски, если указано (например, "на доске 'Название Доски'").
 
     Текст задачи: "{text}"
 
@@ -23,8 +25,10 @@ async def parse_task_text(text: str) -> dict:
     Пример ответа:
     {{
       "title": "Написать отчет по продажам",
-      "deadline": "2023-12-31 18:00:00",
-      "assignee": "Иван"
+      "deadline": "31.12.2023",
+      "assignee": "Иван",
+      "project_name": "Мой Проект",
+      "board_name": "Канбан Доска"
     }}
     """
 
@@ -40,4 +44,11 @@ async def parse_task_text(text: str) -> dict:
         parsed_data = json.loads(response.choices[0].message.content)
         return parsed_data
     except (json.JSONDecodeError, IndexError):
-        return {"title": text, "deadline": None, "assignee": None}
+        # В случае ошибки парсинга JSON, возвращаем только title и null для остальных полей
+        return {
+            "title": text,
+            "deadline": None,
+            "assignee": None,
+            "project_name": None,
+            "board_name": None
+        }
